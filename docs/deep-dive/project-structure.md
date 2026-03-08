@@ -4,44 +4,40 @@
 
 ```
 pi-mono/
-├── src/                    # 源码目录
-│   ├── core/              # 核心模块
-│   ├── utils/             # 工具函数
-│   └── index.ts           # 入口文件
+├── packages/
+│   ├── pi-ai/              # LLM API 抽象层
+│   ├── pi-agent-core/      # Agent 核心逻辑
+│   ├── pi-coding-agent/   # 编程助手实现
+│   ├── pi-mom/            # 多操作管理器
+│   ├── pi-tui/             # 终端 UI 框架
+│   ├── pi-web-ui/         # Web UI（未来）
+│   └── pi-pods/            # 容器化部署
 ├── tests/                  # 测试目录
-├── docs/                   # 文档目录
-├── examples/               # 示例目录
 └── package.json           # 项目配置
 ```
 
-## 2. 核心模块
+## 2. 核心模块说明
 
-### 2.1 core 模块
+### pi-ai
+LLM API 抽象层，支持多家提供商：
+- Anthropic (Claude)
+- OpenAI (GPT)
+- Google (Gemini)
+- xAI (Grok)
 
-核心模块包含 pi-mono 的主要功能实现。
+### pi-agent-core
+Agent 核心逻辑：
+- 事件驱动架构
+- 流式消息处理
+- 灵活的队列机制
 
-- **模块 A**：功能描述
-- **模块 B**：功能描述
-- **模块 C**：功能描述
+### pi-tui
+终端 UI 框架：
+- 差分渲染
+- 组件化设计
+- 强大编辑器
 
-### 2.2 utils 模块
+## 3. 相关资源
 
-工具函数模块提供通用辅助功能。
-
-## 3. 依赖关系
-
-```mermaid
-graph LR
-    A[index.ts] --> B[core]
-    A --> C[utils]
-    B --> D[模块 A]
-    B --> E[模块 B]
-```
-
-## 4. 构建流程
-
-详细的构建流程分析待补充。
-
-## 5. 测试策略
-
-详细的测试策略分析待补充。
+- [总索引](/deep-dive/pi-mono-study-index)
+- [GitHub](https://github.com/badlogic/pi-mono)

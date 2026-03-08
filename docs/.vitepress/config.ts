@@ -1,21 +1,10 @@
 import { defineConfig } from 'vitepress'
-import { withMermaid } from "vitepress-plugin-mermaid";
 
 // https://vitepress.vuejs.org/config/app-configs
-const a = defineConfig({
+export default defineConfig({
   title: 'pi-mono 深度分析',
   description: '深入理解 pi-mono 核心机制与源码实现',
   base: '/',
-
-  // Vite 配置 - 修复 dayjs 导入问题
-  vite: {
-    optimizeDeps: {
-      include: ['dayjs']
-    },
-    ssr: {
-      noExternal: ['dayjs']
-    }
-  },
 
   // Markdown 配置
   markdown: {
@@ -122,11 +111,3 @@ const a = defineConfig({
     }
   }
 })
-
-export default withMermaid({
-  ...a,
-  mermaid: {},
-  mermaidPlugin: {
-    class: "mermaid my-class",
-  },
-});
