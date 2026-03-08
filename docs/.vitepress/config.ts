@@ -21,8 +21,8 @@ const a = defineConfig({
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
-      { text: '深度分析', link: '/deep-dive/' },
-      { text: 'GitHub', link: 'https://github.com/your-org/pi-mono' }
+      { text: '总索引', link: '/deep-dive/pi-mono-study-index' },
+      { text: 'GitHub', link: 'https://github.com/badlogic/pi-mono' }
     ],
 
     sidebar: [
@@ -30,27 +30,75 @@ const a = defineConfig({
         text: '开始',
         items: [
           { text: '首页', link: '/' },
-          { text: '文档索引', link: '/deep-dive/' },
-          { text: '更新日志', link: '/deep-dive/changelog' },
-          { text: '学习路径', link: '/deep-dive/study-tasks' }
+          { text: '总索引', link: '/deep-dive/pi-mono-study-index' },
+          { text: '架构图', link: '/deep-dive/pi-mono-architecture-diagram' },
+          { text: '更新日志', link: '/deep-dive/changelog' }
         ]
       },
       {
-        text: '核心模块',
+        text: '核心系统分析',
         items: [
-          { text: '概览', link: '/deep-dive/overview' }
-        ]
-      },
-      {
-        text: '源码分析',
-        items: [
-          { text: '项目结构', link: '/deep-dive/project-structure' }
+          {
+            text: 'Extensions 系统',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-01-extensions' }
+            ]
+          },
+          {
+            text: '会话管理',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-02-sessions' },
+              { text: '深度分析', link: '/deep-dive/pi-mono-analysis-09-sessions-deep' }
+            ]
+          },
+          {
+            text: '工具调用系统',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-03-tools' },
+              { text: '深度分析', link: '/deep-dive/pi-mono-analysis-10-tools-deep' }
+            ]
+          },
+          {
+            text: 'Agent 运行时',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-04-agent-runtime' },
+              { text: '深度分析', link: '/deep-dive/pi-mono-analysis-04-agent-runtime-deep' }
+            ]
+          },
+          {
+            text: 'TUI 终端 UI',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-05-tui' },
+              { text: '深度分析', link: '/deep-dive/pi-mono-analysis-05-tui-deep' }
+            ]
+          },
+          {
+            text: '跨提供商切换',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-06-cross-provider' },
+              { text: '深度分析', link: '/deep-dive/pi-mono-analysis-06-cross-provider-deep' }
+            ]
+          },
+          {
+            text: 'Skills 系统',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-07-skills' },
+              { text: '深度分析', link: '/deep-dive/pi-mono-analysis-07-skills-deep' }
+            ]
+          },
+          {
+            text: '测试策略',
+            items: [
+              { text: '快速扫描', link: '/deep-dive/pi-mono-analysis-08-testing' },
+              { text: '深度分析', link: '/deep-dive/pi-mono-analysis-08-testing-deep' }
+            ]
+          }
         ]
       }
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-org/pi-mono' }
+      { icon: 'github', link: 'https://github.com/badlogic/pi-mono' }
     ],
 
     footer: {
