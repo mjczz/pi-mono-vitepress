@@ -64,6 +64,30 @@ packages/
 - **类型安全** - 完整的 TypeScript 类型系统
 - **运行时隔离** - 扩展独立加载，错误不影响主程序
 
+#### 扩展生命周期
+
+```mermaid
+stateDiagram-v2
+    [*] --> Loaded: 加载扩展模块
+    Loaded --> Initializing: on_init
+    Initializing --> Ready: 初始化完成
+    Ready --> Active: 会话开始
+    Active --> Processing: on_agent_start
+    Processing --> Active: on_agent_end
+    Active --> Unloaded: 卸载扩展
+    Active --> Error: 扩展错误
+    Error --> Active: 恢复
+    Unloaded --> [*]
+
+    note right of Loaded
+        扩展被加载到独立模块
+    end note
+
+    note right of Active
+        订阅事件、注册工具/命令
+    end note
+```
+
 #### 事件类型
 
 | 事件类型 | 说明 |
@@ -113,6 +137,35 @@ packages/
 - **智能压缩** - 上下文接近限制时自动触发
 - **版本兼容** - 支持从 v1 → v3 的自动升级
 - **精确的分支点** - 可以在任何点标记和切换
+
+#### 会话树结构
+
+```mermaid
+graph TD
+    ROOT["根消息 (id: root)"]
+    M1["消息 1 (id: 1, parentId: root)"]
+    M2["消息 2 (id: 2, parentId: 1)"]
+    M3["消息 3 (id: 3, parentId: 2)"]
+    M4["分支A (id: 4, parentId: 2)"]
+    M5["分支B (id: 5, parentId: 2)"]
+    L1["叶子节点 1 (当前分支)"]
+    L2["叶子节点 2 (当前分支)"]
+    L3["叶子节点 3 (当前分支)"]
+
+    ROOT --> M1
+    M1 --> M2
+    M2 --> M3
+    M2 --> M4
+    M2 --> M5
+    M3 --> L1
+    M4 --> L2
+    M5 --> L3
+
+    style ROOT fill:#f5f5f5
+    style L1 fill:#c8e6c9
+    style L2 fill:#c8e6c9
+    style L3 fill:#c8e6c9
+```
 
 #### 关键概念
 
@@ -188,6 +241,25 @@ interface AgentTool<TParams, TDetails> {
 | `ls` | 列出目录内容 | path, showHidden |
 
 #### 工具执行流程
+
+```mermaid
+flowchart TD
+    A["LLM 请求工具调用"] --> B["参数验证<br/>(TypeBox)"]
+    B --> C{验证通过?}
+    C -->|否| D["返回错误"]
+    C -->|是| E["查找工具注册"]
+    E --> F{工具存在?}
+    F -->|否| D
+    F -->|是| G["执行工具"]
+    G --> H["onUpdate 回调<br/>(流式更新)"]
+    H --> I{"工具完成?"}
+    I -->|进行中| H
+    I -->|完成/错误| J["返回结果<br/>(AgentToolResult)"]
+
+    style A fill:#e3f2fd
+    style D fill:#ffcdd2
+    style J fill:#c8e6c9
+```
 
 1. **验证参数** - TypeBox 运行时验证
 2. **执行工具** - 调用工具的 execute 方法
@@ -494,76 +566,119 @@ class MockStreamFunction {
 
 ### 系统架构图
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        用户层 (User Layer)                    │
-├─────────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │ TUI (pi-tui) │  │ Extensions  │  │ Skills (Skills)│   │
-│  └──────────────┘  └──────────────┘  └──────────────┘   │
-│                                                              │
-├─────────────────────────────────────────────────────────────────┤
-│                      Agent 层 (Agent Layer)                   │
-├─────────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐       │
-│  │          Agent 运行时 (pi-agent-core)         │       │
-│  │  ┌──────────────┐  ┌──────────────┐          │       │
-│  │  │ Agent 循环  │  │ 工具执行器  │          │       │
-│  │  └──────────────┘  └──────────────┘          │       │
-│  └──────────────────────────────────────────────────────┘       │
-│                                                              │
-├─────────────────────────────────────────────────────────────────┤
-│                    API 层 (API Layer)                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐       │
-│  │           LLM API (pi-ai)                      │       │
-│  │  ┌────────────────────────────────────────┐     │       │
-│  │  │  Anthropic  │ OpenAI  │ Google │  │     │       │
-│  │  └────────────────────────────────────────┘     │       │
-│  └──────────────────────────────────────────────────────┘       │
-│                                                              │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph User["用户层"]
+        TUI["TUI<br/>(pi-tui)"]
+        EXT["Extensions"]
+        SKL["Skills"]
+    end
+
+    subgraph Agent["Agent 层"]
+        AC["Agent Core<br/>(pi-agent-core)"]
+        AL["Agent 循环"]
+        TE["工具执行器"]
+    end
+
+    subgraph API["API 层"]
+        AI["LLM API<br/>(pi-ai)"]
+        ANT["Anthropic"]
+        OAI["OpenAI"]
+        GOO["Google"]
+    end
+
+    TUI --> AC
+    EXT --> AC
+    SKL --> AC
+    AC --> AL
+    AC --> TE
+    AC --> AI
+    AI --> ANT
+    AI --> OAI
+    AI --> GOO
+
+    style TUI fill:#e1f5ff
+    style EXT fill:#fff4e1
+    style SKL fill:#e8f5e9
+    style AC fill:#f3e5f5
+    style AI fill:#fce4ec
 ```
 
 ### 数据流架构
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      数据流 (Data Flow)                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                              │
-│  用户输入 ──► TUI ──► Agent ──► LLM API ──► LLM      │
-│      ◄◄◄◄◄      ◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄       │
-│                                                              │
-│  Agent ──► 工具调用 ──► Bash/文件操作 ──► 代码编辑   │
-│      ◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄      │
-│                                                              │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    U["用户输入"]
+    T["TUI"]
+    A["Agent"]
+    L["LLM API"]
+    M["LLM"]
+    TC["工具调用"]
+    FS["文件系统"]
+    B["Bash"]
+
+    U --> T
+    T --> A
+    A --> L
+    L --> M
+    M --> L
+    L --> A
+    A --> T
+    T --> U
+
+    A --> TC
+    TC --> FS
+    TC --> B
+    FS --> A
+    B --> A
+
+    style U fill:#e3f2fd
+    style M fill:#fce4ec
+    style FS fill:#e8f5e9
+    style B fill:#fff3e0
 ```
 
 ### 模块交互架构
 
+```mermaid
+graph LR
+    EXT["Extensions"]
+    AGT["Agent"]
+    SKL["Skills"]
+    TOL["Tools"]
+    AL["Agent Loop"]
+    SM["Session Mgmt"]
+
+    EXT <--> AGT
+    AGT <--> SKL
+    EXT <--> TOL
+    TOL <--> AL
+    EXT <--> SM
+    AGT <--> SM
+
+    style EXT fill:#fff4e1
+    style SKL fill:#e8f5e9
+    style AGT fill:#f3e5f5
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    模块交互 (Module Interaction)               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │  Extensions  │◄►│   Agent     │◄►│     Skills    │   │
-│  └──────────────┘  └──────────────┘  └──────────────┘   │
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │  Extensions  │◄►│    Tools    │◄►│   Agent Loop  │   │
-│  └──────────────┘  └──────────────┘  └──────────────┘   │
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │  Extensions  │◄►│    Agent    │◄►│  Session Mgmt  │   │
-│  └──────────────┘  └──────────────┘  └──────────────┘   │
-│                                                              │
-└─────────────────────────────────────────────────────────────────┘
+
+### Agent 事件流
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: 初始化
+    Idle --> AgentStart: 用户输入
+    AgentStart --> TurnStart: 开始处理
+    TurnStart --> MessageStart: 生成消息
+    MessageStart --> MessageUpdate: 流式更新
+    MessageUpdate --> ToolCall: 需要工具
+    ToolCall --> ToolResult: 工具执行
+    ToolResult --> MessageUpdate: 继续生成
+    MessageUpdate --> TurnEnd: 消息完成
+    TurnEnd --> AgentEnd: 处理结束
+    AgentEnd --> Idle: 返回空闲
+    MessageUpdate --> AgentAborted: 用户中断
+    ToolResult --> AgentAborted: 用户中断
+    AgentAborted --> Idle
 ```
 
 ---

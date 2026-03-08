@@ -1,7 +1,9 @@
 import { defineConfig } from 'vitepress'
+import { createMarkdownRenderer } from 'vitepress'
+import { withMermaid } from "vitepress-plugin-mermaid";
 
 // https://vitepress.vuejs.org/config/app-configs
-export default defineConfig({
+const a = defineConfig({
   title: 'pi-mono 深度分析',
   description: '深入理解 pi-mono 核心机制与源码实现',
   base: '/',
@@ -111,3 +113,11 @@ export default defineConfig({
     }
   }
 })
+
+export default withMermaid({
+  ...a,
+  mermaid: {},
+  mermaidPlugin: {
+    class: "mermaid my-class",
+  },
+});
