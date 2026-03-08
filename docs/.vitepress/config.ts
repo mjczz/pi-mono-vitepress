@@ -7,6 +7,16 @@ const a = defineConfig({
   description: '深入理解 pi-mono 核心机制与源码实现',
   base: '/',
 
+  // Vite 配置 - 修复 dayjs 导入问题
+  vite: {
+    optimizeDeps: {
+      include: ['dayjs']
+    },
+    ssr: {
+      noExternal: ['dayjs']
+    }
+  },
+
   // Markdown 配置
   markdown: {
     // 配置代码块行号
